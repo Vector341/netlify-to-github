@@ -6,7 +6,7 @@ import { ContextAlert } from 'components/context-alert';
 import { getNetlifyContext } from 'utils';
 
 const cards = [
-    //{ text: 'Hello', linkText: 'someLink', href: '/' }
+    { text: 'Hello', linkText: 'someLink', href: '/' }
 ];
 
 const contextExplainer = `
@@ -52,7 +52,7 @@ export default function Page() {
                 <RandomQuote />
                 <Markdown content={postDynamicContentExplainer} />
             </section>
-            {/* !!cards?.length && <CardsGrid cards={cards} /> */}
+            { !!cards?.length && <CardsGrid cards={cards} /> }
         </main>
     );
 }
