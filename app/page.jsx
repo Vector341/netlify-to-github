@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Card } from 'components/card';
+import { CardsGrid } from 'components/cards-grid';
 import { RandomQuote } from 'components/random-quote';
 import { Markdown } from 'components/markdown';
 import { ContextAlert } from 'components/context-alert';
