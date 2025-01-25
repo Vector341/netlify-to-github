@@ -10,6 +10,9 @@
     },
     "dependencies": {
         "@netlify/blobs": "^8.1.0",
+        "@netlify/functions": "^3.0.0",
+        "@octokit/core": "^6.1.3",
+        "@octokit/rest": "^21.1.0",
         "blobshape": "^1.0.0",
         "bright": "^0.8.5",
         "markdown-to-jsx": "^7.4.5",
