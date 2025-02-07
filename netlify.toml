@@ -1,3 +1,9 @@
 [build]
-  publish = ".next"
+  publish = "dist"
   command = "npm run build"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["jsdom"]
+  ignored_node_modules = ["ky-universal"]

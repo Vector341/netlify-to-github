@@ -1,4 +1,38 @@
 import { stream } from '@netlify/functions';
+import { JSDOM } from 'jsdom';
+
+function createProxyUrl(url: string, base: string, proxyUrl: string) {
+    return new URL(proxyUrl).toString() + new URL(url, base).toString();
+}
+
+// similar to `wget -k`
+async function fetchk(url: string, proxyUrl: string) {
+    const res = await fetch(url);
+    const html = await res.text();
+    const jsdom = new JSDOM(html, {
+        url: url,
+        contentType: 'text/html'
+    });
+    const document = jsdom.window.document;
+
+    // <A>
+    document.querySelectorAll('a').forEach((a) => {
+        a.href = createProxyUrl(a.href, url, proxyUrl);
+    });
+
+    // <STYLE-SHEET>
+    document.querySelectorAll('link[rel=stylesheet]').forEach((a: HTMLLinkElement) => {
+        a.href = createProxyUrl(a.href, url, proxyUrl);
+    });
+
+    // <IMG>
+    document.querySelectorAll('img').forEach((a) => {
+        a.src = createProxyUrl(a.src, url, proxyUrl);
+    });
+
+    return jsdom.serialize();
+}
+
 /**
  * get the dest url embedded in a string
  * @param str looks like `/web-proxy/https://example.com/`
@@ -17,14 +51,18 @@ function getUrl(str: string) {
 
 const handler = stream(async (event) => {
     // const reqUrl = event.queryStringParameters;
+    const reqUrl = event.rawUrl;
     const reqPath = event.path;
-    let toUrl: URL;
-    let response: Response;
+    let toUrl: URL, baseUrl: URL;
+    let response: string;
 
     // parsing url
     try {
         const toUrlStr = getUrl(reqPath);
+        const preUrl = reqUrl.slice(0, reqUrl.length - toUrlStr.length);
+
         toUrl = new URL(toUrlStr);
+        baseUrl = new URL(preUrl);
     } catch (e) {
         if (e instanceof TypeError) {
             console.error('not a valid url');
@@ -52,7 +90,7 @@ const handler = stream(async (event) => {
 
     // fetch resource
     try {
-        response = await fetch(toUrl);
+        response = await fetchk(toUrl.toString(), baseUrl.toString());
     } catch (e) {
         console.error(e);
         return {
@@ -70,7 +108,12 @@ const handler = stream(async (event) => {
 
     return {
         statusCode: 200,
-        body: response.body
+        body: new ReadableStream({
+            start(controller) {
+                controller.enqueue(new TextEncoder().encode(response));
+                controller.close();
+            }
+        })
     };
 });
 
