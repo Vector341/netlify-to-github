@@ -16,12 +16,12 @@
         "@octokit/rest": "^21.1.0",
         "blobshape": "^1.0.0",
         "bright": "^0.8.5",
-        "jsdom": "^26.0.0",
         "markdown-to-jsx": "^7.4.5",
         "next": "15.1.5",
         "react": "18.3.1",
         "react-dom": "18.3.1",
-        "unique-names-generator": "^4.7.1"
+        "unique-names-generator": "^4.7.1",
+        "wget-k": "^1.0.1"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.18",

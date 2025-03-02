@@ -1,36 +1,31 @@
 import { stream } from '@netlify/functions';
-import { JSDOM } from 'jsdom';
+import convertHtml from 'wget-k';
 
 function createProxyUrl(url: string, base: string, proxyUrl: string) {
     return new URL(proxyUrl).toString() + new URL(url, base).toString();
 }
 
+function getAbsHtml(html: string, url: string, proxyUrl: string) {
+    console.log('url: ', url, '\tproxyUrl: ', proxyUrl);
+
+    return convertHtml(html, url);
+}
+
 // similar to `wget -k`
 async function fetchk(url: string, proxyUrl: string) {
     const res = await fetch(url);
-    const html = await res.text();
-    const jsdom = new JSDOM(html, {
-        url: url,
-        contentType: 'text/html'
-    });
-    const document = jsdom.window.document;
+    const headers = res.headers;
+    console.log('headers: ', headers);
 
-    // <A>
-    document.querySelectorAll('a').forEach((a) => {
-        a.href = createProxyUrl(a.href, url, proxyUrl);
-    });
+    const contentType = headers.get('content-type');
+    console.log('contentType: ', contentType);
 
-    // <STYLE-SHEET>
-    document.querySelectorAll('link[rel=stylesheet]').forEach((a: HTMLLinkElement) => {
-        a.href = createProxyUrl(a.href, url, proxyUrl);
-    });
-
-    // <IMG>
-    document.querySelectorAll('img').forEach((a) => {
-        a.src = createProxyUrl(a.src, url, proxyUrl);
-    });
-
-    return jsdom.serialize();
+    if (!contentType?.includes('text/html')) {
+        return res.text();
+    } else {
+        const html = await res.text();
+        return getAbsHtml(html, url, proxyUrl);
+    }
 }
 
 /**
